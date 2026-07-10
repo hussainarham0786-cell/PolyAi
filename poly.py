@@ -1,6 +1,10 @@
 from google import genai
 # ADD THIS LINE
 import streamlit as st
+
+st.title("PolyAI is Live!")
+st.write("Welcome to my assistant.")
+ 
 api_key = st.secrets["GOOGLE_API_KEY"]
 
 # 1. SETUP
