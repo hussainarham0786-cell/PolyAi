@@ -4,7 +4,7 @@ import streamlit as st
 api_key = st.secrets["GOOGLE_API_KEY"]
 
 # 1. SETUP
-client = genai.Client(api_key=userdata.get('GOOGLE_API_KEY'))
+client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY"])
 model_id = "gemini-3.1-flash-lite"
 chat = client.chats.create(model=model_id)
 
