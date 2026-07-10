@@ -7,7 +7,7 @@ st.title("PolyAI Chatbot")
 if "client" not in st.session_state:
     try:
         st.session_state.client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY"])
-        st.session_state.chat = st.session_state.client.chats.create(model="gemini-1.5-flash")
+        st.session_state.chat = st.session_state.client.chats.create(model="gemini-1.5-flash-002")
     except Exception as e:
         st.error(f"Setup Error: {e}")
         st.stop()
