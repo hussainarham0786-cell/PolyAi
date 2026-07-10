@@ -1,5 +1,7 @@
 from google import genai
-from google.colab import userdata
+# ADD THIS LINE
+import streamlit as st
+api_key = st.secrets["GOOGLE_API_KEY"]
 
 # 1. SETUP
 client = genai.Client(api_key=userdata.get('GOOGLE_API_KEY'))
