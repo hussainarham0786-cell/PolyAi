@@ -1,34 +1,32 @@
-from google import genai
-# ADD THIS LINE
 import streamlit as st
+from google import genai
 
-st.title("PolyAI is Live!")
-st.write("Welcome to my assistant.")
- 
-api_key = st.secrets["GOOGLE_API_KEY"]
+st.title("PolyAI Chatbot")
 
-# 1. SETUP
-client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY"])
-model_id = "gemini-3.1-flash-lite"
-chat = client.chats.create(model=model_id)
+# Initialize the AI client
+if "client" not in st.session_state:
+    st.session_state.client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY"])
+    # Initialize the chat session
+    st.session_state.chat = st.session_state.client.chats.create(model="gemini-2.0-flash")
 
-print(f"✅ Successfully connected to {model_id}!")
-print("--- Type 'quit' to exit the chat ---")
+# Keep track of the chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# 2. PERSISTENT CHAT LOOP
-while True:
-    try:
-        user_input = input("\nYou: ")
-        
-        # Check if user wants to stop
-        if user_input.lower() == 'quit':
-            print("Goodbye!")
-            break
-            
-        # Send message and get response
-        response = chat.send_message(user_input)
-        print(f"AI: {response.text}")
-        
-    except Exception as e:
-        print(f"\n❌ Loop Error: {e}")
-        break
+# Show previous messages
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Accept user input
+if prompt := st.chat_input("Ask PolyAI something..."):
+    # Show user message
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
+    # Get AI response
+    with st.chat_message("assistant"):
+        response = st.session_state.chat.send_message(prompt)
+        st.markdown(response.text)
+        st.session_state.messages.append({"role": "assistant", "content": response.text})
