@@ -1,48 +1,43 @@
 import streamlit as st
-from google import genai
-import os
+from groq import Groq
+from tavily import TavilyClient
 
-# Set page configuration
-st.set_page_config(page_title="PolyAI Chatbot", page_icon="🤖")
+# Initialize clients using secrets
+groq_client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+tavily = TavilyClient(api_key=st.secrets["TAVILY_API_KEY"])
 
-st.title("PolyAI Chatbot")
+st.title("My AI Assistant")
 
-# 1. Initialize the AI client securely
-if "client" not in st.session_state:
-    try:
-        # Pulls the key from your Streamlit Secrets settings
-        api_key = st.secrets["GOOGLE_API_KEY"]
-        st.session_state.client = genai.Client(api_key=api_key)
-        
-        # Initialize chat session
-        # If this model name gives an error, use the one you saw in your list earlier
-        st.session_state.chat = st.session_state.client.chats.create(model="gemini-1.5-flash-latest")
-
-    except Exception as e:
-        st.error(f"Configuration Error: {e}")
-        st.stop()
-
-# 2. Keep track of chat history
+# Maintain chat history in session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 3. Display chat history
+# Display chat history
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# 4. Handle user input
-if prompt := st.chat_input("Ask PolyAI something..."):
-    # Display user message
+# Handle user input
+if prompt := st.chat_input("Ask me anything..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Get AI response
+    # Search web using Tavily
+    search_result = tavily.search(query=prompt)
+    context = "\n".join([r['content'] for r in search_result['results']])
+
+    # Generate response using Groq
+    response = groq_client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {"role": "system", "content": f"Context: {context}"},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    
+    ai_response = response.choices[0].message.content
+    st.session_state.messages.append({"role": "assistant", "content": ai_response})
+    
     with st.chat_message("assistant"):
-        try:
-            response = st.session_state.chat.send_message(prompt)
-            st.markdown(response.text)
-            st.session_state.messages.append({"role": "assistant", "content": response.text})
-        except Exception as e:
-            st.error(f"API Error: {e}")
+        st.markdown(ai_response)
