@@ -16,7 +16,8 @@ if "client" not in st.session_state:
         
         # Initialize chat session
         # If this model name gives an error, use the one you saw in your list earlier
-        st.session_state.chat = st.session_state.client.chats.create(model="gemini-1.5-flash")
+        st.session_state.chat = st.session_state.client.chats.create(model="gemini-1.5-flash-latest")
+
     except Exception as e:
         st.error(f"Configuration Error: {e}")
         st.stop()
